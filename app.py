@@ -1,36 +1,40 @@
 from flask import Flask, jsonify
-from config import Config
-from routes.tracking_routes import tracking_bp
-from routes.flight_routes import flight_bp
-from models.database import db
+from pymongo import MongoClient
+from bson import ObjectId
+from datetime import datetime
+import json   # ✅ This line was missing!
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    
-    # Register blueprints
-    app.register_blueprint(tracking_bp)
-    app.register_blueprint(flight_bp)
-    
-    # Health check endpoint
-    @app.route('/api/health', methods=['GET'])
-    def health_check():
-        return jsonify({
-            'status': 'healthy',
-            'database': 'connected' if db.client else 'disconnected'
-        })
-    
-    # Error handlers
-    @app.errorhandler(404)
-    def not_found(error):
-        return jsonify({'error': 'Endpoint not found'}), 404
-    
-    @app.errorhandler(500)
-    def internal_error(error):
-        return jsonify({'error': 'Internal server error'}), 500
-    
-    return app
+app = Flask(__name__)
 
-if __name__ == '__main__':
-    app = create_app()
-    app.run(debug=Config.DEBUG, port=5000)
+# MongoDB Connection
+client = MongoClient("mongodb://localhost:27017/")
+db = client["flight_tracking"]
+
+# Helper to make ObjectId JSON serializable
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
+
+app.json_encoder = JSONEncoder
+
+# ---- ROUTE TO GET FLIGHT HISTORY ----
+@app.route("/api/flights/<flight_id>/history", methods=["GET"])
+def get_flight_history(flight_id):
+    records = list(db.tracking_updates.find({"flight_id": flight_id}))
+    
+    if not records:
+        return jsonify({"error": "Flight history not found"}), 404
+    
+    for record in records:
+        record["_id"] = str(record["_id"])
+        record["created_at"] = record["created_at"].isoformat()
+
+    return jsonify({"history": records}), 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
