@@ -1,9 +1,8 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
-import json   # ✅ This line was missing!
-from flask import render_template
+import json
 
 app = Flask(__name__)
 
@@ -37,9 +36,11 @@ def get_flight_history(flight_id):
     return jsonify({"history": records}), 200
 
 
+# ✅ MOVE THIS ABOVE app.run()
+@app.route("/flight_map")
+def show_flight_map():
+    return render_template("flight_map.html")
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-    
-@app.route("/map")
-def show_map():
-    return render_template("map.html")
