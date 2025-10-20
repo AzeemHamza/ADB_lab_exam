@@ -21,9 +21,26 @@ class JSONEncoder(json.JSONEncoder):
 
 app.json_encoder = JSONEncoder
 
-# ---- ROUTE TO GET FLIGHT HISTORY ----
+
+# ---- ROUTE: GET ALL FLIGHTS ----
+@app.route("/api/flights", methods=["GET"])
+def get_all_flights():
+    """Returns all flights stored in the database"""
+    flights = list(db.flights.find())
+    
+    if not flights:
+        return jsonify({"error": "No flights found"}), 404
+
+    for flight in flights:
+        flight["_id"] = str(flight["_id"])
+
+    return jsonify({"flights": flights}), 200
+
+
+# ---- ROUTE: GET FLIGHT HISTORY ----
 @app.route("/api/flights/<flight_id>/history", methods=["GET"])
 def get_flight_history(flight_id):
+    """Returns all tracking updates for a specific flight"""
     records = list(db.tracking_updates.find({"flight_id": flight_id}))
     
     if not records:
@@ -36,9 +53,10 @@ def get_flight_history(flight_id):
     return jsonify({"history": records}), 200
 
 
-# ✅ MOVE THIS ABOVE app.run()
+# ---- ROUTE: SHOW FLIGHT MAP PAGE ----
 @app.route("/flight_map")
 def show_flight_map():
+    """Displays the frontend map for tracking flights"""
     return render_template("flight_map.html")
 
 
