@@ -1,0 +1,125 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 70px);
+}
+
+#map-container {
+    flex: 1;
+    position: relative;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.sidebar {
+    width: 300px;
+    background: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    overflow-y: auto;
+}
+
+.sidebar h3 {
+    margin: 0;
+    padding: 15px;
+    background: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.flight-list {
+    padding: 10px;
+}
+
+.flight-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.flight-item:hover {
+    background: #e3f2fd;
+}
+
+.flight-item h4 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+}
+
+.flight-details {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.plane-marker {
+    transition: transform 0.3s ease;
+}
+
+.flight-popup {
+    min-width: 200px;
+}
+
+.flight-popup h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.flight-popup p {
+    margin: 5px 0;
+}
+
+.flight-popup button {
+    width: 100%;
+    margin-top: 10px;
+}

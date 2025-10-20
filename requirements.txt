@@ -1,0 +1,8 @@
+flask==2.3.3
+pymongo==4.5.0
+folium==0.14.0
+matplotlib==3.7.2
+python-dotenv==1.0.0
+requests==2.31.0
+pytest==7.4.2
+mapbox==0.19.0  # Add Mapbox SDK

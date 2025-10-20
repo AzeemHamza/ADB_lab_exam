@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Flight Tracking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    {% if mapbox_enabled %}
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    {% endif %}
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flight_map.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Real-time Flight Tracking</h1>
+            <div class="controls">
+                <button id="refresh-btn">Refresh</button>
+                <button id="toggle-terrain">Toggle Terrain</button>
+                <span id="flight-count">Loading flights...</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <div class="sidebar">
+                <h3>Active Flights</h3>
+                <div id="flight-list" class="flight-list">
+                    <!-- Flight list will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if mapbox_enabled %}
+    <script>
+        const MAPBOX_TOKEN = '{{ mapbox_token }}';
+    </script>
+    <script src="{{ url_for('static', filename='js/mapbox_handler.js') }}"></script>
+    {% endif %}
+    
+    <script src="{{ url_for('static', filename='js/flight_tracker.js') }}"></script>
+</body>
+</html>

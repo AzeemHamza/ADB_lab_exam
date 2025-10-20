@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight {{ flight.flight_id }} - Tracking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    {% if mapbox_enabled %}
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    {% endif %}
+    
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .flight-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="flight-info">
+        <h2>Flight {{ flight.flight_id }}</h2>
+        <p><strong>Airline:</strong> {{ flight.airline }}</p>
+        <p><strong>From:</strong> {{ flight.origin.code }} to <strong>To:</strong> {{ flight.destination.code }}</p>
+        <p><strong>Status:</strong> {{ flight.status }}</p>
+        <p><strong>Aircraft:</strong> {{ flight.aircraft.type }}</p>
+    </div>
+    <div id="map"></div>
+
+    <!-- Pass data as JSON to avoid template conflicts -->
+    <script id="flight-data" type="application/json">
+        {
+            "mapbox_token": "{{ mapbox_token }}",
+            "flight": {
+                "longitude": {{ flight.current_position.longitude }},
+                "latitude": {{ flight.current_position.latitude }},
+                "altitude": {{ flight.current_position.altitude }},
+                "speed": {{ flight.current_position.speed }},
+                "heading": {{ flight.current_position.heading }},
+                "flight_id": "{{ flight.flight_id }}",
+                "airline": "{{ flight.airline }}",
+                "origin_code": "{{ flight.origin.code }}",
+                "destination_code": "{{ flight.destination.code }}"
+            }
+        }
+    </script>
+
+    {% if mapbox_enabled %}
+    <script>
+        // Parse the JSON data
+        const config = JSON.parse(document.getElementById('flight-data').textContent);
+        
+        mapboxgl.accessToken = config.mapbox_token;
+        
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox/streets-v11',
+            center: [config.flight.longitude, config.flight.latitude],
+            zoom: 8,
+            pitch: 45
+        });
+
+        map.on('load', function() {
+            // Add terrain
+            map.addSource('mapbox-dem', {
+                'type': 'raster-dem',
+                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                'tileSize': 512,
+                'maxzoom': 14
+            });
+            map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+
+            // Add flight marker
+            new mapboxgl.Marker({ color: '#ff0000' })
+                .setLngLat([config.flight.longitude, config.flight.latitude])
+                .setPopup(new mapboxgl.Popup().setHTML(
+                    '<h3>Flight ' + config.flight.flight_id + '</h3>' +
+                    '<p><strong>Airline:</strong> ' + config.flight.airline + '</p>' +
+                    '<p><strong>Route:</strong> ' + config.flight.origin_code + ' → ' + config.flight.destination_code + '</p>' +
+                    '<p><strong>Altitude:</strong> ' + config.flight.altitude + ' ft</p>' +
+                    '<p><strong>Speed:</strong> ' + config.flight.speed + ' kts</p>' +
+                    '<p><strong>Heading:</strong> ' + config.flight.heading + '°</p>'
+                ))
+                .addTo(map);
+        });
+    </script>
+    {% else %}
+    <script>
+        console.log('Mapbox not available, using fallback mapping');
+        // You can implement OpenStreetMap fallback here
+    </script>
+    {% endif %}
+</body>
+</html>
