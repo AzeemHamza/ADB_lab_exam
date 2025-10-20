@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 import json   # ✅ This line was missing!
+from flask import render_template
 
 app = Flask(__name__)
 
@@ -38,3 +39,7 @@ def get_flight_history(flight_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
+@app.route("/map")
+def show_map():
+    return render_template("map.html")
