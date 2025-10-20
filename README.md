@@ -155,14 +155,6 @@ If you get import errors, double-check that `__init__.py` files are correctly na
 * **Indexing**: The database wrapper auto-creates indexes (e.g., time-based indexes). If you re-seed data or change schema, drop/recreate indexes as needed during development.
 * **Empty docs**: The `docs/` folder has placeholders for API and schema documentation; consider filling them out before submission for full marks.
 
----
 
-## 🙋 What I can do next (tell me what you want)
-* Fix `_init_.py` → `__init__.py` across the project and run the test suite.  
-* Start the Flask app here and paste runtime logs / errors.  
-* Generate a grading checklist (which endpoints exist, which tests pass, missing docs).  
-* Expand the API documentation files in `docs/` with exact request/response examples.
-
----
 
 **Author / Student:** Hamza Azeem — FA23-BCS-112 (Section C) — Lab Exam Paper: E
