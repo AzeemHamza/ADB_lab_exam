@@ -1,222 +1,168 @@
-Name : M.Hamza Azeem
-Reg.No : FA23-BCS-112
-Section :C
-Lab exam paper : E
+# ADB Lab Exam — Flight Tracking Backend
 
-
-# 🛫 Flight Tracking System (ADB Lab Exam)
-
-## 📋 Overview
-This project is a **Flask-based flight tracking system** similar to FlightAware.  
-It receives, stores, and retrieves flight and tracking data in **MongoDB**, providing APIs to query active flights, their details, and movement history.
-
-The system demonstrates core concepts of:
-- REST API design using **Flask**
-- **MongoDB integration** using `PyMongo`
-- **JSON-based communication**
-- **Data modeling and insertion** for flights and tracking updates
+**Student:** Hamza Azeem  
+**Reg. No:** FA23-BCS-112  
+**Section:** C  
+**Lab Exam Paper:** E  
 
 ---
 
-## ⚙️ Tech Stack
-| Component | Technology |
-|------------|-------------|
-| Backend | Python (Flask) |
-| Database | MongoDB |
-| Driver | PyMongo |
-| API Format | REST + JSON |
-| Environment | Virtualenv / VS Code |
-| Testing | Browser or cURL / Postman |
+## 🛰️ Project Overview
+
+This is a small, well-scoped backend for ingesting and serving **flight tracking data**. It provides HTTP APIs to receive tracking updates from receivers, store flight logs in a MongoDB database, and expose flight and history endpoints for clients to query positions and flight paths. The project also includes utilities for validation and simple mapping/visualization helpers (Folium + Matplotlib are available in the requirements).
+
+> This README was created based on the project contents and a template README. (Template reference: README (E‑commerce backend).) fileciteturn0file0
 
 ---
 
-## 📂 Project Structure
+## ✨ Key Features
+
+* **Tracking ingestion** — Receivers POST tracking updates to the server to record positions and telemetry.
+* **Flight management API** — List active flights and fetch flight histories / paths.
+* **Receiver management** — Store receiver IDs and index receiver records for efficient queries.
+* **Indexes & performance** — The database code creates helpful indexes for time-based queries and receiver lookups.
+* **Mapping support** — Lightweight mapping utilities (Folium) for quickly rendering flight paths for debugging / demoing.
+* **Tests** — A pytest-based test dependency is included for running unit tests.
+
+---
+
+## 🛠 Tech Stack & Dependencies
+
+* **Framework:** Flask (Python)
+* **Database:** MongoDB (using `pymongo` — direct driver)
+* **Visualization:** Folium, Matplotlib
+* **Other:** python-dotenv, requests, pytest
+
+Dependencies come from `requirements.txt`:
+```
+flask==2.3.3
+pymongo==4.5.0
+folium==0.14.0
+matplotlib==3.7.2
+python-dotenv==1.0.0
+requests==2.31.0
+pytest==7.4.2
+```
+
+---
+
+## 🗂 Project Structure (high level)
+
 ```
 ADB_lab_exam/
-│
-├── app.py                     # Flask entry point
-├── config.py                  # Database and environment configuration
-├── routes/
-│   ├── __init__.py
-│   └── tracking_routes.py     # API routes for flights and tracking
-│
-├── models/
-│   ├── __init__.py
-│   ├── flight_model.py        # Flight data schema
-│   └── tracking_model.py      # Tracking update schema
-│
-├── utils/
-│   ├── __init__.py
-│   └── json_encoder.py        # Custom JSON encoder for ObjectId
-│
-├── insert_flight_and_points.py # Script to insert sample data
-├── requirements.txt            # Python dependencies
-└── README.md                   # Project documentation
+├─ app.py                 # Flask entrypoint — registers blueprints
+├─ config.py              # Configuration loader (reads .env)
+├─ models/
+│  ├─ database.py         # Mongo wrapper & index creation
+│  └─ flight_models.py    # (models / helpers)
+├─ routes/
+│  ├─ flight_routes.py    # /api/flights endpoints
+│  ├─ tracking_routes.py  # /api/tracking endpoints
+│  └─ receiver_routes.py  # receiver-related endpoints
+├─ services/              # business logic (tracking_service, flight_service)
+├─ utils/                 # validators, helpers, constants
+├─ docs/                  # project docs (setup, API docs — currently empty)
+├─ static/ templates/      # optional UI / demo pages
+├─ tests/                 # pytest tests (if provided)
+└─ requirements.txt
 ```
 
----
-
-## 🧩 Installation & Setup
-
-### 1️⃣ Prerequisites
-- **Python 3.8+**
-- **MongoDB** (running locally)
-- **VS Code / Terminal access**
+> Note: Several package files in the repository are named `_init_.py` (single underscore). For Python packages to work correctly, these should be renamed to `__init__.py` (two underscores) — otherwise imports like `from routes.tracking_routes import tracking_bp` may fail. Fixing that is the first recommended step before running the app or tests.
 
 ---
 
-### 2️⃣ Setup Virtual Environment
-```powershell
-# inside project folder
-python -m venv .venv
-.venv\Scripts\activate
+## 🔌 Quick Setup & Run (local)
+
+> These are the straightforward steps to get the project running locally. Adjust as needed for your environment.
+
+1. **Ensure MongoDB is running locally** (or provide a remote MongoDB URI). If running locally, start `mongod` or use a Docker MongoDB container.
+
+2. **Create and activate a Python virtualenv** (recommended):
+```bash
+python -m venv venv
+source venv/bin/activate    # macOS / Linux
+venv\Scripts\activate       # Windows (PowerShell)
 ```
 
----
-
-### 3️⃣ Install Dependencies
-```powershell
+3. **Install dependencies**:
+```bash
 pip install -r requirements.txt
 ```
 
-If you don’t have `requirements.txt`, install manually:
-```powershell
-pip install flask pymongo
+4. **Create a `.env` file** in the project root (example):
+```env
+MONGO_URI=mongodb://localhost:27017/adb_lab_db
+PORT=5000
 ```
+`config.py` reads configuration from environment variables via `python-dotenv`.
 
----
+5. **Fix package init files** (if present):
+Make sure each package folder has a `__init__.py` (two underscores) — rename `_init_.py` → `__init__.py` where necessary.
 
-### 4️⃣ Start MongoDB
-Make sure MongoDB is running:
-```powershell
-Get-Service *mongo*
-```
-If it’s stopped:
-```powershell
-Start-Service MongoDB
-```
-
----
-
-### 5️⃣ Set Environment Variables
-```powershell
-$env:DATABASE_NAME = "flight_tracking"
-$env:MONGODB_URI = "mongodb://127.0.0.1:27017/"
-$env:FLASK_APP = "app.py"
-$env:FLASK_ENV = "development"
-```
-
----
-
-### 6️⃣ Insert Sample Data
-Run the data insertion script to populate sample flight and tracking information:
-```powershell
-python insert_flight_and_points.py
-```
-
----
-
-### 7️⃣ Run the Flask Server
-```powershell
+6. **Start the server**:
+```bash
+export FLASK_APP=app.py
+export FLASK_ENV=development   # optional
+flask run --port=5000
+# or
 python app.py
 ```
-or
-```powershell
-flask run
-```
 
-Server starts at:
-> 🔗 http://127.0.0.1:5000
+Server will be available at `http://localhost:5000` (or the port you specify).
 
 ---
 
-## 🧠 API Endpoints
+## 📡 API Endpoints (available / observed)
 
-| Endpoint | Method | Description |
-|-----------|--------|-------------|
-| `/api/flights` | GET | Retrieve list of all flights |
-| `/api/flights/<flight_id>` | GET | Get details of a specific flight |
-| `/api/flights/<flight_id>/history` | GET | Retrieve tracking updates for a flight |
-| `/api/tracking` | POST | Add a new tracking update (for testing insertion) |
+The project exposes a handful of HTTP endpoints (the exact details are implemented in `routes/`):
 
----
+* `POST /api/tracking/update` — Ingest tracking updates from receivers. (JSON body; validated by `utils.validators`.)
+* `GET  /api/flights` — List flights (supports optional query filters such as `status`).
+* `GET  /api/flights/<flight_id>/history` — Retrieve complete flight path / history for a flight.
 
-### 📡 Example API Usage
+> There are additional helpers/routes for receivers and position queries in `routes/` (see `flight_routes.py`, `tracking_routes.py`, `receiver_routes.py`). For exact request/response shapes, check `utils/validators.py` and the service implementations in `services/`.
 
-**Get all flights:**
-```
-GET http://127.0.0.1:5000/api/flights
-```
-
-**Get single flight info:**
-```
-GET http://127.0.0.1:5000/api/flights/PK201
-```
-
-**Get flight tracking history:**
-```
-GET http://127.0.0.1:5000/api/flights/PK201/history
-```
-
-**Insert new tracking update (example POST):**
-```json
-POST /api/tracking
-{
-  "flight_id": "PK201",
-  "receiver_id": "RCV001",
-  "position": {
-    "latitude": 24.8618,
-    "longitude": 67.0102,
-    "altitude": 29900,
-    "heading": 95,
-    "speed": 445
-  },
-  "timestamp": "2025-10-20T10:15:00Z"
-}
-```
-
----
-
-## 🧾 Sample Response
-
-**GET /api/flights**
+### Example (approximate) tracking payload
 ```json
 {
-  "flights": [
-    {
-      "flight_id": "PK201",
-      "callsign": "PK201",
-      "origin": "KHI",
-      "destination": "LHE",
-      "status": "enroute",
-      "aircraft_type": "A320"
-    }
-  ]
+  "flight_id": "FLIGHT123",
+  "receiver_id": "RCV-01",
+  "latitude": 32.98765,
+  "longitude": 74.12345,
+  "altitude": 1200,
+  "timestamp": "2025-10-20T12:34:56Z"
 }
 ```
+> Use the exact schema enforced by `utils.validators.validate_tracking_data` when sending real data.
 
 ---
 
-## 🧰 Troubleshooting
+## 🧪 Running Tests
 
-**1️⃣ MongoDB not connecting?**
-- Check that MongoDB service is running:
-  ```powershell
-  Get-Service *mongo*
-  ```
+If tests exist, run them with pytest:
+```bash
+pytest -q
+```
 
-**2️⃣ Empty `{ "flights": [] }`?**
-- Make sure `$env:DATABASE_NAME = "flight_tracking"` before running the app.
-- Reinsert sample data if necessary.
-
-**3️⃣ Port already in use?**
-- Stop other Flask servers or use:
-  ```powershell
-  flask run -p 5050
-  ```
+If you get import errors, double-check that `__init__.py` files are correctly named and that the virtual environment has the required packages installed.
 
 ---
 
-## 🧑‍💻 Author
-**Muhammad Hamza Azeem**  
-ADB Lab Exam Project – Flight Tracking System
+## 📝 Tips & Troubleshooting
+
+* **Renaming `_init_.py`**: This is the single most likely cause of import-time failures — please rename to `__init__.py` in package directories (`routes/`, `models/`, `services/`, etc.).  
+* **Mongo connectivity**: If the app can’t connect to MongoDB, verify `MONGO_URI` and that the server is reachable. Use `mongo` shell or Compass to check.  
+* **Indexing**: The database wrapper auto-creates indexes (e.g., time-based indexes). If you re-seed data or change schema, drop/recreate indexes as needed during development.
+* **Empty docs**: The `docs/` folder has placeholders for API and schema documentation; consider filling them out before submission for full marks.
+
+---
+
+## 🙋 What I can do next (tell me what you want)
+* Fix `_init_.py` → `__init__.py` across the project and run the test suite.  
+* Start the Flask app here and paste runtime logs / errors.  
+* Generate a grading checklist (which endpoints exist, which tests pass, missing docs).  
+* Expand the API documentation files in `docs/` with exact request/response examples.
+
+---
+
+**Author / Student:** Hamza Azeem — FA23-BCS-112 (Section C) — Lab Exam Paper: E
