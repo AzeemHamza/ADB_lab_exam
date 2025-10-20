@@ -1,48 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Real-time Flight Tracking</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    {% if mapbox_enabled %}
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
-    {% endif %}
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/flight_map.css') }}">
+  <meta charset="utf-8">
+  <title>Flight Tracker Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Real-time Flight Tracking</h1>
-            <div class="controls">
-                <button id="refresh-btn">Refresh</button>
-                <button id="toggle-terrain">Toggle Terrain</button>
-                <span id="flight-count">Loading flights...</span>
-            </div>
-        </header>
-        
-        <div class="main-content">
-            <div id="map-container">
-                <div id="map"></div>
-            </div>
-            
-            <div class="sidebar">
-                <h3>Active Flights</h3>
-                <div id="flight-list" class="flight-list">
-                    <!-- Flight list will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-    </div>
+  <div id="map"></div>
 
-    {% if mapbox_enabled %}
-    <script>
-        const MAPBOX_TOKEN = '{{ mapbox_token }}';
-    </script>
-    <script src="{{ url_for('static', filename='js/mapbox_handler.js') }}"></script>
-    {% endif %}
-    
-    <script src="{{ url_for('static', filename='js/flight_tracker.js') }}"></script>
+  <script>
+    // ⚠️ Replace this with your actual Mapbox token
+    mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN_HERE';
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [67.0011, 24.8607], // Karachi
+      zoom: 5
+    });
+
+    // Fetch flight data from Flask API
+    fetch('http://127.0.0.1:5000/api/flights/PK201/history')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.history) {
+          alert('No flight history found');
+          return;
+        }
+
+        data.history.forEach(point => {
+          const { latitude, longitude, altitude } = point.position;
+          new mapboxgl.Marker({ color: 'red' })
+            .setLngLat([longitude, latitude])
+            .setPopup(new mapboxgl.Popup().setHTML(`
+              <b>Flight:</b> ${point.flight_id}<br>
+              <b>Alt:</b> ${altitude} ft<br>
+              <b>Speed:</b> ${point.position.speed} knots
+            `))
+            .addTo(map);
+        });
+      })
+      .catch(err => console.error(err));
+  </script>
 </body>
 </html>
