@@ -3,6 +3,7 @@ from models.database import db
 from services.flight_service import FlightService
 from services.visualization_service import VisualizationService
 from config import Config  # Add this import
+from bson.json_util import dumps
 
 #Defining different API endpoints (routes) that handle all 
 # the flight-related requests — like getting all flights,
@@ -20,7 +21,7 @@ def get_all_flights():
     try:
         status_filter = request.args.get('status') #reads from the query
         flights = flight_service.get_flights(status_filter) #gets the flight through the query
-        return jsonify({'flights': flights}) # converts to json 
+        return dumps({"flights": flights}), 200, {'Content-Type': 'application/json'} # converts to json 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
